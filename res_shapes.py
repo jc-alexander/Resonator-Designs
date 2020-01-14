@@ -620,3 +620,52 @@ def opti_res(w_cap,l_cap_edge,gap,w_ind,r,n_turns):
     shapes += [inner+outer]
 
     return shapes
+
+def interdigital_capacitor(y0,l_arm,w_cap,gap,n):
+
+    capacitor = []
+
+    for i in range(n):
+        capacitor += [rect(l_arm,w_cap,0,y0)]
+        capacitor += [rect(w_cap,w_cap+2*gap,0,y0+w_cap)]
+        capacitor += [rect(w_cap,w_cap+gap,l_arm+gap,y0)]
+        capacitor += [rect(l_arm,w_cap,w_cap+gap,y0+w_cap+gap)]
+        capacitor += [rect(w_cap,gap,l_arm+gap,y0+2*w_cap+gap)]
+        y0 = y0 + (2*w_cap + 2*gap)
+    return capacitor
+
+def solidarc(x0,y0,r,w_ind,t0,tf,npoints=51):
+    n=npoints
+    inner = [(r*np.cos(i) + x0, r*np.sin(i) + y0) for i in np.linspace(t0, tf, n)] + [(r*np.cos(tf)+x0, r*np.sin(tf) + y0 - w_ind)]
+    outer = [((r+w_ind)*np.cos(i) + x0, (r+w_ind)*np.sin(i) + y0) for i in np.linspace(tf, t0, n)] + [(r*np.cos(t0)+x0, r*np.sin(t0) + y0 - w_ind)]
+
+    return [inner+outer]
+
+def inerdig_optires(l_arm,w_cap,gap,n,r,w_ind):
+
+    design = []
+
+    design += [rect(l_arm/2,w_cap,0,0)]
+    design += [rect(l_arm/2,w_cap,w_cap+gap+l_arm/2,0)]
+    design += [rect(w_cap,2*w_cap,l_arm/2-w_cap,w_cap)]
+    design += [rect(w_cap,2*w_cap,l_arm/2+w_cap+gap,w_cap)]
+    design += [rect(l_arm/2,w_cap,0,3*w_cap)]
+    design += [rect(l_arm/2,w_cap,l_arm/2+w_cap+gap,3*w_cap)]
+    design += [rect(w_cap,gap,0,4*w_cap)]
+    design += [rect(w_cap,gap,l_arm+gap,4*w_cap)]
+
+    y0 = 4*w_cap + gap
+
+    design += interdigital_capacitor(y0,l_arm,w_cap,gap,n)
+
+    design += [rect(l_arm/2,w_cap,0,y0+n*(2*w_cap+2*gap))]
+    design += [rect(l_arm/2,w_cap,w_cap+gap+l_arm/2,y0+n*(2*w_cap+2*gap))]
+    design += [rect(w_ind,3*gap,l_arm/2-w_ind,y0+n*(2*w_cap+2*gap)+w_cap)]
+    design += [rect(w_ind,3*gap,l_arm/2+w_cap+gap,y0+n*(2*w_cap+2*gap)+w_cap)]
+
+    theta = (gap+w_cap)/r # Angle swept out by gap in omega
+    t0 = -np.pi/2 + theta/2 # In radians
+    tf = (3/2)*np.pi - theta/2
+    design += solidarc((l_arm+w_cap+gap)/2,y0 + n*(2*w_cap+2*gap)+w_cap+r+w_ind,r,w_ind,t0,tf)
+
+    return design
