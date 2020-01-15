@@ -12,6 +12,7 @@ os.chdir(folder)
 
 lens = np.linspace(1000, 10000, 10)
 
+#ground plane + feedline
 bckgrnd = []
 bckgrnd += [[(0, -300), (1000, -300), (1000, -50), (0, - 50)]]
 bckgrnd += [[(0,0), (1000,0), (1000, 100), (0,100)]]
