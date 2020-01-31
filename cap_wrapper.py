@@ -6,10 +6,10 @@ import numpy as np
 import seaborn as sns
 
 w = 1000
-l_arm = 160
+l_arm = 537
 w_cap = 48
-gap = 27
-n = 5
+gap = 28
+n = 2
 r = 25
 w_ind = 5
 o_gap = 20
