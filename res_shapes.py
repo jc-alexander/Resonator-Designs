@@ -621,18 +621,39 @@ def opti_res(w_cap,l_cap_edge,gap,w_ind,r,n_turns):
 
     return shapes
 
-def interdigital_capacitor(y0,l_arm,w_cap,gap,n):
+def interdigital_capacitor(y0,w,l_arm,w_cap,gap,n):
 
     capacitor = []
 
     for i in range(n):
-        capacitor += [rect(l_arm,w_cap,0,y0)]
-        capacitor += [rect(w_cap,w_cap+2*gap,0,y0+w_cap)]
-        capacitor += [rect(w_cap,w_cap+gap,l_arm+gap,y0)]
-        capacitor += [rect(l_arm,w_cap,w_cap+gap,y0+w_cap+gap)]
-        capacitor += [rect(w_cap,gap,l_arm+gap,y0+2*w_cap+gap)]
-        y0 = y0 + (2*w_cap + 2*gap)
-    return capacitor
+        if i%2 == 0:
+            capacitor += [rect(l_arm,w_cap,0,y0)]
+            capacitor += [rect(w_cap,w_cap+2*gap,0,y0+w_cap)]
+            y0 = y0 + (2*w_cap+2*gap)
+        if i%2 == 1:
+            y0 = y0 - (2*w_cap+2*gap)
+            capacitor += [rect(w_cap,w_cap+gap,w-w_cap,y0)]
+            capacitor += [rect(l_arm,w_cap,w-l_arm,y0+w_cap+gap)]
+            capacitor += [rect(w_cap,gap,w-w_cap,y0+2*w_cap+gap)]
+            y0 = y0 + (2*w_cap+2*gap)
+    return [capacitor,y0]
+
+def capacitance_calc(y0,w,l_arm,w_cap,gap,n):
+
+    capacitor = []
+
+    for i in range(n):
+        if i%2 == 0:
+            capacitor += [rect(l_arm,w_cap,0,y0)]
+            #capacitor += [rect(w_cap,w_cap+2*gap,0,y0+w_cap)]
+            y0 = y0 + (2*w_cap+2*gap)
+        if i%2 == 1:
+            y0 = y0 - (2*w_cap+2*gap)
+            #capacitor += [rect(w_cap,w_cap+gap,w-w_cap,y0)]
+            capacitor += [rect(l_arm,w_cap,w-l_arm,y0+w_cap+gap)]
+            #capacitor += [rect(w_cap,gap,w-w_cap,y0+2*w_cap+gap)]
+            y0 = y0 + (2*w_cap+2*gap)
+    return [capacitor,y0]
 
 def solidarc(x0,y0,r,w_ind,o_gap,npoints=51):
     n=npoints
@@ -646,10 +667,10 @@ def solidarc(x0,y0,r,w_ind,o_gap,npoints=51):
 
     return [inner+outer]
 
-def interdig_optires(l_arm,w_cap,gap,n,r,w_ind,o_gap):
+def interdig_optires(w,l_arm,w_cap,gap,n,r,w_ind,o_gap):
 
     design = []
-
+    '''
     design += [rect((l_arm+gap+w_cap)/2 - gap/2,w_cap,0,0)]
     design += [rect((l_arm+gap+w_cap)/2 - gap/2,w_cap,(l_arm+gap+w_cap)/2 + gap/2,0)]
     design += [rect(w_cap,2*w_cap,(l_arm+gap+w_cap)/2 - gap/2-w_cap,w_cap)]
@@ -660,18 +681,25 @@ def interdig_optires(l_arm,w_cap,gap,n,r,w_ind,o_gap):
     design += [rect(w_cap,gap,l_arm+gap,4*w_cap)]
 
     y0 = 4*w_cap + gap
+    '''
+    y0 = 0
 
-    design += interdigital_capacitor(y0,l_arm,w_cap,gap,n)
+    cap = interdigital_capacitor(y0,w,l_arm,w_cap,gap,n)
+    design += cap[0]
+    y0 = cap[1]
 
     theta = o_gap/r # Angle swept out by gap in omega
     t0 = -np.pi/2 + theta/2 # In radians
     tf = (3/2)*np.pi - theta/2
 
-    design += [rect((l_arm+gap+w_cap)/2 - o_gap/2,w_cap,0,y0+n*(2*w_cap+2*gap))]
-    design += [rect((l_arm+gap+w_cap)/2 - o_gap/2,w_cap,(l_arm+gap+w_cap)/2 + o_gap/2,y0+n*(2*w_cap+2*gap))]
-    design += [rect(w_ind,r*np.sin(tf)+r+w_ind,(l_arm+gap+w_cap)/2 - o_gap/2 - w_ind,y0+n*(2*w_cap+2*gap)+w_cap)]
-    design += [rect(w_ind,r*np.sin(tf)+r+w_ind,(l_arm+gap+w_cap)/2 + o_gap/2,y0+n*(2*w_cap+2*gap)+w_cap)]
+    if n%2 == 1:
+        design += [rect(w_cap,2*w_cap+2*gap,w-w_cap,y0-2*w_cap-2*gap)]
 
-    design += solidarc((l_arm+w_cap+gap)/2,y0 + n*(2*w_cap+2*gap)+w_cap+r+w_ind,r,w_ind,o_gap)
+    design += [rect(w/2- o_gap/2,w_cap,0,y0)]
+    design += [rect(w/2 - o_gap/2,w_cap,w/2 + o_gap/2,y0)]
+    design += [rect(w_ind,4*w_ind+r*np.sin(tf)+r+w_ind,w/2 - o_gap/2 - w_ind,y0+w_cap)]
+    design += [rect(w_ind,4*w_ind+r*np.sin(tf)+r+w_ind,w/2+ o_gap/2,y0+w_cap)]
+
+    design += solidarc(w/2,y0 +w_cap+r+5*w_ind,r,w_ind,o_gap)
 
     return design
