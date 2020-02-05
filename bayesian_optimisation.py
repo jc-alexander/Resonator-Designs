@@ -39,14 +39,14 @@ from cap_wrapper import run_sim
 
 # Define the input parameters for our function
 
-w = 1000
+#w = 1000
 #l_arm = 450
 #w_cap = 20
 #gap = 30
 #n = 5
-r = 25
-w_ind = 5
-o_gap = 20
+#r = 25
+#w_ind = 5
+#o_gap = 20
 y0 = 0
 x0 = 0
 h = 0.05
@@ -54,11 +54,15 @@ h = 0.05
 # Parameter space
 # parameter_space = ParameterSpace([ContinuousParameter('l_ind', 10e-06, 50e-06), ContinuousParameter('gap_ind', 4e-07, 2e-06)])
 parameter_space = ParameterSpace([\
-    ContinuousParameter('l_arm', 100, 900), \
+    ContinuousParameter('w', 500, 2000), \
+    ContinuousParameter('l_arm', 500, 1500), \
     ContinuousParameter('w_cap', 5, 50),\
     ContinuousParameter('gap', 5, 50), \
     # ContinuousParameter('t', 25e-09, 75e-09),
-    ContinuousParameter('n', 2, 50),\
+    ContinuousParameter('n', 2, 20),\
+    ContinuousParameter('r', 10, 100), \
+    ContinuousParameter('w_ind', 1, 50), \
+    ContinuousParameter('o_gap', 1, 50), \
     # ContinuousParameter('l_cap', 150e-06, 750e-06)
     ])
 """
@@ -71,15 +75,19 @@ ContinuousParameter('gap_ind', 1e-06, 5e-06),\
 """
 # Function to optimize
 def q(X):
-    l_arm = X[:, 0]
-    w_cap = X[:, 1]
-    gap = X[:,2]
+    w = X[:,0]
+    l_arm = X[:, 1]
+    w_cap = X[:, 2]
+    gap = X[:,3]
     # t = X[:,3]
-    n = X[:,3]
+    n = X[:,4]
+    r = X[:,5]
+    w_ind = X[:,6]
+    o_gap = X[:,7]
     # l_cap = X[:,5]
     out = np.zeros((len(l_arm),1))
     for g in range(len(l_arm)):
-        out[g,0] = run_sim(w,l_arm[g],w_cap[g],gap[g],int(n[g]),r,w_ind,o_gap,y0,x0,h)
+        out[g,0] = run_sim(w[g],l_arm[g],w_cap[g],gap[g],int(n[g]),r[g],w_ind[g],o_gap[g],y0,x0,h)
     return out
 
 #f, space = branin_function()
@@ -108,6 +116,8 @@ plt.show()
 exp_imprv = ExpectedImprovement(model = model_emukit)
 optimizer = GradientAcquisitionOptimizer(space = parameter_space)
 point_calc = SequentialPointCalculator(exp_imprv,optimizer)
+coords = []
+min = []
 
 bayesopt_loop = BayesianOptimizationLoop(model = model_emukit,
                                          space = parameter_space,
@@ -123,6 +133,7 @@ min_value = bayesopt_loop.get_results().minimum_value
 step_results = bayesopt_loop.get_results().best_found_value_per_iteration
 print(coord_results)
 print(min_value)
+
 """
 results = [coord_results,min_value]
 
@@ -134,14 +145,14 @@ results_file.close()
 data = model_emukit.model.to_dict()
 with open('model_data.txt','w') as outfile:
     json.dump(data,outfile)
-"""
+
 model_emukit.model.plot(levels=500,visible_dims=[1,2])
 ax = plt.gca()
 mappable = ax.collections[0]
 plt.colorbar(mappable)
 plt.savefig('model.png')
 plt.show()
-"""
+
 # Shelf
 import shelve
 

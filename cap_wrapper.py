@@ -5,17 +5,19 @@ from matplotlib import pyplot as plt
 import numpy as np
 import seaborn as sns
 
-w = 1000
-l_arm = 537
-w_cap = 48
-gap = 28
-n = 2
+w = 1100
+l_arm = 1050
+w_cap = 10
+gap = 20
+n = 6
 r = 25
-w_ind = 5
-o_gap = 20
+w_ind = 10
+o_gap = 10
 y0 = 0
 x0 = 0
 h = 0.05
+
+
 '''
 cap_array = []
 arm_array = np.linspace(100,2000,10)
@@ -84,11 +86,15 @@ def run_sim(w,l_arm,w_cap,gap,n,r,w_ind,o_gap,y0,x0,h):
 if __name__ == "__main__":
 
     print("\nCreating Design...\n")
-    capacitor = rs.capacitance_calc(y0,w,l_arm,w_cap,gap,n)[0]
+    capacitor_calc = rs.capacitance_calc(y0,w,l_arm,w_cap,gap,n)
+    capacitor = capacitor_calc[0]
+    L = capacitor_calc[2]
+    R = capacitor_calc[3]
     inductor = rs.solidarc(x0,y0,r,w_ind,o_gap)
     inductor = inductor[0][0:int(len(inductor[0])/2)]
+
     print("\nCalaculating Capacitance using Fastercap...")
-    gds_to_patran.capacitance_setup(capacitor)
+    gds_to_patran.capacitance_setup(capacitor,L,R)
     cap = calc_cap.calc_cap()*1e-3
     print("\nCapacitance is {} pF\n".format(cap*1e15))
     print("\nCalaculating Inductance using FastHenry...")
