@@ -641,19 +641,26 @@ def interdigital_capacitor(y0,w,l_arm,w_cap,gap,n):
 def capacitance_calc(y0,w,l_arm,w_cap,gap,n):
 
     capacitor = []
-
+    yinit = y0
+    #capacitor += [rect(w_cap,w_cap,0,-w_cap)]
+    #capacitor += [rect(w_cap,w_cap,w-w_cap,-w_cap)]
+    L = 0
+    R = 0
     for i in range(n):
         if i%2 == 0:
             capacitor += [rect(l_arm,w_cap,0,y0)]
-            #capacitor += [rect(w_cap,w_cap+2*gap,0,y0+w_cap)]
+            capacitor += [rect(w_cap,w_cap+2*gap,0,y0+w_cap)]
             y0 = y0 + (2*w_cap+2*gap)
+            L=L+2
+    y0 = yinit
+    for i in range(n):
         if i%2 == 1:
-            y0 = y0 - (2*w_cap+2*gap)
-            #capacitor += [rect(w_cap,w_cap+gap,w-w_cap,y0)]
+            capacitor += [rect(w_cap,w_cap+gap,w-w_cap,y0)]
             capacitor += [rect(l_arm,w_cap,w-l_arm,y0+w_cap+gap)]
-            #capacitor += [rect(w_cap,gap,w-w_cap,y0+2*w_cap+gap)]
+            capacitor += [rect(w_cap,gap,w-w_cap,y0+2*w_cap+gap)]
             y0 = y0 + (2*w_cap+2*gap)
-    return [capacitor,y0]
+            R=R+3
+    return [capacitor,y0,L,R]
 
 def solidarc(x0,y0,r,w_ind,o_gap,npoints=51):
     n=npoints
@@ -662,8 +669,8 @@ def solidarc(x0,y0,r,w_ind,o_gap,npoints=51):
     t0 = -np.pi/2 + theta/2 # In radians
     tf = (3/2)*np.pi - theta/2
 
-    inner = [(r*np.cos(i) + x0, r*np.sin(i) + y0) for i in np.linspace(t0, tf, n)] + [(r*np.cos(tf)+x0, r*np.sin(tf) + y0 - w_ind)]
-    outer = [((r+w_ind)*np.cos(i) + x0, (r+w_ind)*np.sin(i) + y0) for i in np.linspace(tf, t0, n)] + [(r*np.cos(t0)+x0, r*np.sin(t0) + y0 - w_ind)]
+    inner = [(r*np.cos(i) + x0, r*np.sin(i) + y0) for i in np.linspace(t0, tf, n)] #+ [(r*np.cos(tf)+x0, r*np.sin(tf) + y0 - w_ind)]
+    outer = [((r+w_ind)*np.cos(i) + x0, (r+w_ind)*np.sin(i) + y0) for i in np.linspace(tf, t0, n)]# + [(r*np.cos(t0)+x0, r*np.sin(t0) + y0 - w_ind)]
 
     return [inner+outer]
 
